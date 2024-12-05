@@ -18,7 +18,11 @@ class Kpi extends Model
         'year',
         'target',
         'realisasi',
-        'skor',
-        'final_skor'
+        'skor'
     ];
+
+    public function users()
+{
+    return $this->belongsTo(User::class, 'id_users');
+}
 }

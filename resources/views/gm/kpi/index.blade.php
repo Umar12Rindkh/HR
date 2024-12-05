@@ -1,4 +1,4 @@
-@extends('mh.templates.index')
+@extends('gm.templates.index')
 
 @section('page-gm')
     <div class="container mx-auto p-4">
@@ -27,14 +27,14 @@
             <tbody>
                 @foreach ($kpis as $kpi)
                     <tr>
-                        <td class="border border-gray-300 p-2">{{ $kpi->nama }}</td>
-                        <td class="border border-gray-300 p-2">{{ $kpi->jabatan }}</td>
+                        <td class="border border-gray-300 p-2">{{ $kpi->users->name }}</td>
+                        <td class="border border-gray-300 p-2">{{ $kpi->users->jabatan }}</td>
                         <td class="border border-gray-300 p-2">{{ \Illuminate\Support\Str::limit($kpi->desc, 30) }}</td>
                         <td class="border border-gray-300 p-2">{{ number_format($kpi->bobot, 0, '.', '') }}</td>
                         <td class="border border-gray-300 p-2">{{ number_format($kpi->target, 0, '.', '') }}</td>
                         <td class="border border-gray-300 p-2">{{ number_format($kpi->realisasi, 0, '.', '') }}</td>
-                        <td class="border border-gray-300 p-2">{{ number_format($kpi->skor, 0, '.', '') }}</td>
-                        <td class="border border-gray-300 p-2">{{ $kpi->final_skor }}</td>
+                        <td class="border border-gray-300 p-2">{{ ($kpi->target * $kpi->realisasi) / 100 }}</td>
+                        <td class="border border-gray-300 p-2">{{ $kpi->bobot * (($kpi->target * $kpi->realisasi) / 100 ) / 100 }}</td>
                         <td class="border border-gray-300 p-2">
                             <a href="{{ route('kpi.edit', $kpi->id) }}" class="text-blue-500">Edit</a>
                             <form action="{{ route('kpi.destroy', $kpi->id) }}" method="POST" class="inline">

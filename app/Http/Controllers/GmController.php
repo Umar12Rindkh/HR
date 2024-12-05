@@ -134,9 +134,10 @@ class GmController extends Controller
 
     public function viewkpi()
     {
-        $kpis = Kpi::all();
+      $kpis = Kpi::with('users')->get();
         return view('gm.kpi.index', compact('kpis'));
     }
+    
     public function kpi()
     {
         $kpis = Kpi::all();
