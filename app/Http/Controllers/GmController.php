@@ -138,6 +138,14 @@ class GmController extends Controller
         return view('gm.kpi.index', compact('kpis'));
     }
     
+    public function detailkpi($userName){
+        $kpis = Kpi::whereHas('users', function($query) use ($userName){
+            $query->where('name', $userName);
+        })->get();
+        $jabatan = $kpis->first()->users->jabatan;
+        return view('gm.kpi.detailkpi', compact('kpis' , 'userName', 'jabatan'));
+    }
+    
     public function kpi()
     {
         $kpis = Kpi::all();

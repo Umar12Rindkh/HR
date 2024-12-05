@@ -67,6 +67,7 @@ Route::middleware('role:gm')->group(function () {
         Route::get('general-manager/kpi/{id}/edit', 'kpiedit')->name('kpi.edit');
         Route::put('general-manager/kpi/{id}', 'kpiupdate')->name('kpi.update');
         Route::delete('general-manager/kpi/{id}', 'kpidestroy')->name('kpi.destroy');
+        Route::get('/kpi/detail/{userName}', 'detailkpi')->name('kpi.detailkpi');
 
         Route::get('general-manager/add-user', 'adduser')->name('add.user');
         Route::post('doadduser', 'doadduser')->name('doadduser');

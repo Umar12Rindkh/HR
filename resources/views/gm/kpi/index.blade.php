@@ -15,36 +15,21 @@
                 <tr>
                     <th class="border border-gray-300 p-2">Nama</th>
                     <th class="border border-gray-300 p-2">Jabatan</th>
-                    <th class="border border-gray-300 p-2">Desc</th>
-                    <th class="border border-gray-300 p-2">Bobot</th>
-                    <th class="border border-gray-300 p-2">Target</th>
-                    <th class="border border-gray-300 p-2">Realisasi</th>
-                    <th class="border border-gray-300 p-2">Skor</th>
-                    <th class="border border-gray-300 p-2">Final Skor</th>
                     <th class="border border-gray-300 p-2">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($kpis as $kpi)
+                @foreach ($kpis->groupBy('users.name') as $kpiGroup)
                     <tr>
-                        <td class="border border-gray-300 p-2">{{ $kpi->users->name }}</td>
-                        <td class="border border-gray-300 p-2">{{ $kpi->users->jabatan }}</td>
-                        <td class="border border-gray-300 p-2">{{ \Illuminate\Support\Str::limit($kpi->desc, 30) }}</td>
-                        <td class="border border-gray-300 p-2">{{ number_format($kpi->bobot, 0, '.', '') }}</td>
-                        <td class="border border-gray-300 p-2">{{ number_format($kpi->target, 0, '.', '') }}</td>
-                        <td class="border border-gray-300 p-2">{{ number_format($kpi->realisasi, 0, '.', '') }}</td>
-                        <td class="border border-gray-300 p-2">{{ ($kpi->target * $kpi->realisasi) / 100 }}</td>
-                        <td class="border border-gray-300 p-2">{{ $kpi->bobot * (($kpi->target * $kpi->realisasi) / 100 ) / 100 }}</td>
+                        <td class="border border-gray-300 p-2">{{ $kpiGroup->first()->users->name }}</td>
+                        <td class="border border-gray-300 p-2">{{ $kpiGroup->first()->users->jabatan }}</td>
                         <td class="border border-gray-300 p-2">
-                            <a href="{{ route('kpi.edit', $kpi->id) }}" class="text-blue-500">Edit</a>
-                            <form action="{{ route('kpi.destroy', $kpi->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-500 ml-4">Delete</button>
-                            </form>
+                            <a href="{{ route('kpi.detailkpi', $kpiGroup->first()->users->name) }}"
+                                class="text-blue-500">Detail</a>
                         </td>
                     </tr>
                 @endforeach
+
             </tbody>
         </table>
     </div>
