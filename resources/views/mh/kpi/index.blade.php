@@ -109,6 +109,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {{-- an --}}
                     @foreach ($filteredKpis as $kpi)
                         <tr>
                             <td class="border border-gray-300 p-2">{{ \Illuminate\Support\Str::limit($kpi->desc, 30) }}
