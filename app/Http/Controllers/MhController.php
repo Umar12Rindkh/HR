@@ -207,21 +207,15 @@ class MhController extends Controller
     public function kpiupdate(Request $request, $id)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'jabatan' => 'required|string|max:255', // Validate jabatan
             'desc' => 'required|string|max:255', // Validate desc
             'bobot' => 'required|numeric', // Validate bobot (decimal)
             'target' => 'required|numeric', // Validate target (decimal)
             'realisasi' => 'required|numeric', // Validate realisasi (decimal)
         ]);
 
-        $score = ($request->realization / $request->target) * 100;
-        $finalScore = ($score * $request->weight) / 100;
 
         $kpi = Kpi::find($id);
         $kpi->update([
-            'nama' => $request->nama,
-            'jabatan' => $request->jabatan, // Insert jabatan
             'desc' => $request->desc, // Insert desc
             'bobot' => $request->bobot, // Insert bobot
             'target' => $request->target, // Insert target

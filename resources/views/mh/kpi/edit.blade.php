@@ -9,32 +9,32 @@
 
             <div>
                 <label for="nama" class="block text-sm font-medium text-gray-700">Name</label>
-                <input type="text" id="nama" name="nama" value="{{ old('nama', $kpi->nama) }}"
-                    class="mt-1 p-2 w-full border rounded" required>
+                <input type="text" value="{{ $kpi->users->name }}"
+                    class="mt-1 p-2 w-full border rounded" readonly>
             </div>
 
             <div>
                 <label for="jabatan" class="block text-sm font-medium text-gray-700">Position</label>
-                <input type="text" id="jabatan" name="jabatan" value="{{ old('jabatan', $kpi->jabatan) }}"
-                    class="mt-1 p-2 w-full border rounded" required>
+                <input type="text" id="jabatan" name="jabatan" value="{{ $kpi->users->jabatan }}" 
+                    class="mt-1 p-2 w-full border rounded" readonly> 
             </div>
 
             <div>
                 <label for="desc" class="block text-sm font-medium text-gray-700">Description</label>
-                <input type="text" id="desc" name="desc" value="{{ old('desc', $kpi->desc) }}"
+                <input type="text" id="desc" name="desc" value="{{ $kpi->desc }}"
                     class="mt-1 p-2 w-full border rounded" required>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label for="bobot" class="block text-sm font-medium text-gray-700">Weight</label>
-                    <input type="number" id="bobot" name="bobot" value="{{ number_format($kpi->bobot, 0, '.', '') }}"
+                    <label for="bobot" class="block text-sm font-medium text-gray-700">Bobot</label>
+                    <input type="number" id="bobot" name="bobot" value="{{ $kpi->bobot }}"
                         class="mt-1 p-2 w-full border rounded" required>
                 </div>
                 <div>
                     <label for="target" class="block text-sm font-medium text-gray-700">Target</label>
                     <input type="number" id="target" name="target"
-                        value="{{ number_format($kpi->target, 0, '.', '') }}" class="mt-1 p-2 w-full border rounded"
+                        value="{{ $kpi->target }}" class="mt-1 p-2 w-full border rounded"
                         required readonly>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                 <div>
                     <label for="realisasi" class="block text-sm font-medium text-gray-700">Realization</label>
                     <input type="number" id="realisasi" name="realisasi"
-                        value="{{ number_format($kpi->realisasi, 0, '.', '') }}" class="mt-1 p-2 w-full border rounded"
+                        value="{{ $kpi->realisasi}}" class="mt-1 p-2 w-full border rounded"
                         required>
                 </div>
             </div>
