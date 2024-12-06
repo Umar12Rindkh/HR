@@ -42,39 +42,20 @@
                             <label for="search" class="block text-sm font-medium text-gray-700">Nama</label>
                             <select id="search" name="search" class="mt-1 p-2 w-full border rounded">
                                 <option value="" disabled selected>Pilih Nama</option>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->name }}"
-                                        {{ request('search') == $user->name ? 'selected' : '' }}>
-                                        {{ $user->name }}
+                                @foreach ($allKpis->groupBy('users.name') as $kpi)
+                                    <option value="{{ $kpi->first()->users->name }}"
+                                        {{ request('search') == $kpi->first()->users->name ? 'selected' : '' }}>
+                                        {{ $kpi->first()->users->name }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-
-                        <!-- Month Filter -->
                         <div class="flex-1">
                             <label for="bulan" class="block text-sm font-medium text-gray-700">Bulan</label>
                             <select id="bulan" name="bulan" class="mt-1 p-2 w-full border rounded">
                                 <option value="" disabled selected>Pilih Bulan</option>
-                                @php
-                                    $months = [
-                                        'Januari',
-                                        'Februari',
-                                        'Maret',
-                                        'April',
-                                        'Mei',
-                                        'Juni',
-                                        'Juli',
-                                        'Agustus',
-                                        'September',
-                                        'Oktober',
-                                        'November',
-                                        'Desember',
-                                    ];
-                                @endphp
-
-                                @foreach ($months as $index => $month)
+                                @foreach ($months as $month)
                                     <option value="{{ $month }}" {{ request('bulan') == $month ? 'selected' : '' }}>
                                         {{ $month }}
                                     </option>
@@ -82,7 +63,6 @@
                             </select>
                         </div>
 
-                        <!-- Year Filter -->
                         <div class="flex-1">
                             <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun</label>
                             <select id="tahun" name="tahun" class="mt-1 p-2 w-full border rounded">
@@ -91,7 +71,6 @@
                                     $currentYear = date('Y');
                                     $years = range($currentYear, 2020); // Generates an array from current year to 2020
                                 @endphp
-
                                 @foreach ($years as $year)
                                     <option value="{{ $year }}" {{ request('tahun') == $year ? 'selected' : '' }}>
                                         {{ $year }}
@@ -99,8 +78,6 @@
                                 @endforeach
                             </select>
                         </div>
-
-                        <!-- Search Button -->
                         <div>
                             <button type="submit" class="bg-blue-500 text-white mt-6 py-2 px-4 rounded">Search</button>
                         </div>
@@ -108,19 +85,20 @@
                 </form>
             </div>
         </div>
+        @if ($jabatan)
+            Jabatan: {{ $jabatan }}
+        @endif
 
         @if (!request('search') && !request('bulan'))
             <!-- Pesan awal tanpa pencarian -->
             <div class="p-2 rounded mb-3 text-sm text-center text-gray-600">
                 Silahkan, Cari data terlebih dahulu 🔍
             </div>
-        @elseif (request('search') && $kpis->count() > 0)
+        @elseif (request('search') && $filteredKpis->count() > 0)
             <!-- Menampilkan data KPI setelah pencarian -->
             <table class="table-auto w-full border-collapse border border-gray-200">
                 <thead class="bg-primary text-white">
                     <tr>
-                        <th class="border border-gray-300 p-2">Nama</th>
-                        <th class="border border-gray-300 p-2">Jabatan</th>
                         <th class="border border-gray-300 p-2">Desc</th>
                         <th class="border border-gray-300 p-2">Bobot</th>
                         <th class="border border-gray-300 p-2">Target</th>
@@ -131,18 +109,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($kpis as $kpi)
+                    @foreach ($filteredKpis as $kpi)
                         <tr>
-                            <td class="border border-gray-300 p-2">{{ $kpi->nama }}</td>
-                            <td class="border border-gray-300 p-2">{{ $kpi->jabatan }}</td>
-                            <td class="border border-gray-300 p-2">{{ \Illuminate\Support\Str::limit($kpi->desc, 30) }}</td>
+                            <td class="border border-gray-300 p-2">{{ \Illuminate\Support\Str::limit($kpi->desc, 30) }}
+                            </td>
                             {{-- <td class="border border-gray-300 p-2">{{ $kpi->desc }}</td> --}}
                             <td class="border border-gray-300 p-2">{{ number_format($kpi->bobot, 0, '.', '') }}</td>
                             <td class="border border-gray-300 p-2">{{ number_format($kpi->target, 0, '.', '') }}</td>
-                            <td class="border border-gray-300 p-2">{{ number_format($kpi->realisasi, 0, '.', '') }}
-                            </td>
-                            <td class="border border-gray-300 p-2">{{ number_format($kpi->skor, 0, '.', '') }}</td>
-                            <td class="border border-gray-300 p-2">{{ $kpi->final_skor }}</td>
+                            <td class="border border-gray-300 p-2">{{ number_format($kpi->realisasi, 0, '.', '') }}</td>
+                            <td class="border border-gray-300 p-2">{{ $kpi->target * $kpi->realisasi / 100 }}</td>
+                            <td class="border border-gray-300 p-2">{{ $kpi->bobot * (($kpi->target * $kpi->realisasi) / 100 ) / 100 }}</td>
                             <td class="border border-gray-300 p-2">
                                 <a href="{{ route('kpi.edit', $kpi->id) }}" class="text-blue-500">Edit</a>
                                 <form action="{{ route('kpi.destroy', $kpi->id) }}" method="POST" class="inline">
@@ -158,9 +134,9 @@
                     <tr>
                         <td class="border border-gray-300 p-2 text-bold text-center" colspan="3">Total Skor Akhir
                         </td>
-                        <td class="border border-gray-300 text-bold text-start pl-2">{{ $totalBobot }}</td>
+                        {{-- <td class="border border-gray-300 text-bold text-start pl-2">{{ $totalBobot }}</td> --}}
                         <td class="border border-gray-300 p-2" colspan="3"></td>
-                        <td class="border border-gray-300 p-2 text-bold text-start pl-2">{{ $totalFinalSkor }}</td>
+                        {{-- <td class="border border-gray-300 p-2 text-bold text-start pl-2">{{ $totalFinalSkor }}</td> --}}
                         <td class="border border-gray-300 p-2"></td>
                     </tr>
                 </tfoot>

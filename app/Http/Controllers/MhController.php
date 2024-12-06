@@ -29,15 +29,13 @@ class MhController extends Controller
         return view('mh.adduser.index', compact('users'));
     }
 
-
     public function deleteuser($id)
     {
         $user = User::findOrFail($id);
-        $user->delete();  // Delete the user
+        $user->delete(); // Delete the user
 
         return redirect()->route('add.user')->with('success', 'User deleted successfully!');
     }
-
 
     public function doadduser(Request $request)
     {
@@ -58,10 +56,8 @@ class MhController extends Controller
             'role' => $request->role,
         ]);
 
-        // Redirect ke halaman tertentu setelah berhasil registrasi
         return redirect()->route('add.user')->with('success', 'Berhasil Menambahkan Karyawan');
     }
-
 
     public function print()
     {
@@ -70,64 +66,54 @@ class MhController extends Controller
 
     public function viewkpi(Request $request)
     {
-        // Get search parameters
-        $search_name = $request->input('search'); // Name filter
-        $bulan = $request->input('bulan'); // Month filter
-        $tahun = $request->input('tahun'); // Year filter
+        $searchName = $request->input('search');
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
-        // Array of month names in Indonesian
+        $allKpis = Kpi::with('users')->get();
+
+        $filteredKpis = Kpi::with('users')
+            ->when($searchName, function ($query, $searchName) {
+                $query->whereHas('users', function ($query) use ($searchName) {
+                    $query->where('name', $searchName);
+                });
+            })
+            ->when($bulan, function ($query, $bulan) {
+                $monthNumber = $this->getMonthNumber($bulan);
+                $query->whereMonth('created_at', $monthNumber);
+            })
+            ->when($tahun, function ($query, $tahun) {
+                $query->whereYear('created_at', $tahun);
+            })
+            ->get();
+        $jabatan = null;
+        if ($searchName && $filteredKpis->isNotEmpty()) {
+            $jabatan = $filteredKpis->first()->users->jabatan;
+        }
+
+        $months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        
+        return view('mh.kpi.index', compact('allKpis', 'filteredKpis', 'months', 'jabatan'));
+    }
+
+    private function getMonthNumber($monthName)
+    {
         $months = [
-            'Januari',
-            'Februari',
-            'Maret',
-            'April',
-            'Mei',
-            'Juni',
-            'Juli',
-            'Agustus',
-            'September',
-            'Oktober',
-            'November',
-            'Desember'
+            'Januari' => 1,
+            'Februari' => 2,
+            'Maret' => 3,
+            'April' => 4,
+            'Mei' => 5,
+            'Juni' => 6,
+            'Juli' => 7,
+            'Agustus' => 8,
+            'September' => 9,
+            'Oktober' => 10,
+            'November' => 11,
+            'Desember' => 12,
         ];
-
-        // Apply filters to the KPI query
-        $kpis = Kpi::when($search_name, function ($query, $search_name) {
-            return $query->where('nama', 'like', '%' . $search_name . '%');
-        })
-            ->when($bulan, function ($query) use ($bulan) {
-                // Format the bulan as a two-digit month (e.g., 01, 02, ..., 12)
-                $bulanFormatted = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-                return $query->where('month', '=', $bulanFormatted); // Assuming 'month' is the month number or string
-            })
-            ->when($tahun, function ($query) use ($tahun) {
-                return $query->where('year', '=', $tahun); // Filter by year
-            })
-            ->get(); // Retrieve the filtered KPIs
-
-        // Check if there are no results
-        $noResults = $kpis->isEmpty();
-
-        // Calculate the total final score based on the filtered KPIs
-        $totalFinalSkor = $noResults ? 0 : $kpis->sum('final_skor');
-
-        $totalBobot = $kpis->sum('bobot');
-
-        // Fetch users for the dropdown if needed (assuming HRD users are needed for filter or display)
-        $users = User::where('role', 'hrd')->select('name', 'jabatan')->get();
-
-        // Return the view with data
-        return view('mh.kpi.index', compact(
-            'kpis',
-            'users',
-            'search_name',
-            'bulan',
-            'tahun',
-            'noResults',
-            'totalFinalSkor', // Pass the total final score to the view
-            'months',
-            'totalBobot' // Pass the months array for displaying month names
-        ));
+        return $months[$monthName] ?? null;
     }
 
     public function addappraisal()
@@ -173,7 +159,11 @@ class MhController extends Controller
                 'string',
                 'max:255',
                 function ($attribute, $value, $fail) use ($request) {
-                    if (!User::where('name', $request->nama)->where('jabatan', $value)->exists()) {
+                    if (
+                        !User::where('name', $request->nama)
+                            ->where('jabatan', $value)
+                            ->exists()
+                    ) {
                         $fail('The provided position does not match the user.');
                     }
                 },
@@ -189,7 +179,6 @@ class MhController extends Controller
         // Calculate scores
         $skor = ($request->realisasi / $request->target) * 100;
         $finalSkor = ($skor * $request->bobot) / 100;
-
 
         // Save KPI record
         Kpi::create([
@@ -209,7 +198,6 @@ class MhController extends Controller
         return redirect()->route('kpi')->with('success', 'KPI added successfully!');
     }
 
-
     public function kpiedit($id)
     {
         $kpi = Kpi::find($id);
@@ -220,11 +208,11 @@ class MhController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'jabatan' => 'required|string|max:255',  // Validate jabatan
-            'desc' => 'required|string|max:255',     // Validate desc
-            'bobot' => 'required|numeric',           // Validate bobot (decimal)
-            'target' => 'required|numeric',          // Validate target (decimal)
-            'realisasi' => 'required|numeric',       // Validate realisasi (decimal)
+            'jabatan' => 'required|string|max:255', // Validate jabatan
+            'desc' => 'required|string|max:255', // Validate desc
+            'bobot' => 'required|numeric', // Validate bobot (decimal)
+            'target' => 'required|numeric', // Validate target (decimal)
+            'realisasi' => 'required|numeric', // Validate realisasi (decimal)
         ]);
 
         $score = ($request->realization / $request->target) * 100;
@@ -233,12 +221,11 @@ class MhController extends Controller
         $kpi = Kpi::find($id);
         $kpi->update([
             'nama' => $request->nama,
-            'jabatan' => $request->jabatan,       // Insert jabatan
-            'desc' => $request->desc,             // Insert desc
-            'bobot' => $request->bobot,           // Insert bobot
-            'target' => $request->target,         // Insert target
-            'realisasi' => $request->realisasi,   // Insert realisasi
-
+            'jabatan' => $request->jabatan, // Insert jabatan
+            'desc' => $request->desc, // Insert desc
+            'bobot' => $request->bobot, // Insert bobot
+            'target' => $request->target, // Insert target
+            'realisasi' => $request->realisasi, // Insert realisasi
         ]);
 
         return redirect()->route('kpi')->with('success', 'KPI updated successfully!');
